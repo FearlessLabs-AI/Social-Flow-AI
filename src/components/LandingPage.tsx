@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Zap, ArrowRight, Shield, Sparkles, Globe, BarChart3, AlertCircle } from "lucide-react";
+import { Zap, ArrowRight, Shield, Sparkles, Globe, BarChart3, AlertCircle, TrendingUp } from "lucide-react";
 import GlassCard from "./GlassCard";
 
 interface LandingPageProps {

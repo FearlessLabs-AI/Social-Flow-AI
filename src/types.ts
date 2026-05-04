@@ -1,4 +1,4 @@
-export type Platform = 'instagram' | 'tiktok' | 'twitter' | 'linkedin' | 'ads' | 'general';
+export type Platform = 'instagram' | 'tiktok' | 'twitter' | 'linkedin' | 'ads' | 'facebook' | 'whatsapp' | 'general';
 export type Tone = 'funny' | 'professional' | 'viral' | 'luxury' | 'gen-z';
 
 export interface GeneratedContent {

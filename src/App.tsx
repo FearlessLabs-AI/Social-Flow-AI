@@ -3,6 +3,8 @@ import LandingPage from "./components/LandingPage";
 import Sidebar from "./components/Sidebar";
 import GeneratorView from "./components/GeneratorView";
 import HistoryView from "./components/HistoryView";
+import TemplatesView from "./components/TemplatesView";
+import PlatformsView from "./components/PlatformsView";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, User, Menu, ArrowRight } from "lucide-react";
 import { GeneratedContent } from "./types";
@@ -28,7 +30,9 @@ import { handleFirestoreError, OperationType } from "./lib/firestoreUtils";
 
 export default function App() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("create");
+  const [initialPrompt, setInitialPrompt] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [history, setHistory] = useState<GeneratedContent[]>([]);
 
@@ -80,11 +84,26 @@ export default function App() {
   }, [user]);
 
   const handleLogin = async () => {
+    setLoginError(null);
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Login failed:", error);
+      if (error && typeof error === 'object' && 'code' in error) {
+        const errorCode = (error as { code: string }).code;
+        if (errorCode === 'auth/popup-blocked') {
+          setLoginError("Popup was blocked by your browser. Please allow popups for this site.");
+        } else if (errorCode === 'auth/popup-closed-by-user') {
+          setLoginError("Login window was closed before completion.");
+        } else if (errorCode === 'auth/cancelled-popup-request') {
+          setLoginError("A login request is already in progress. Please check your open windows.");
+        } else {
+          setLoginError("An unexpected error occurred during login. Please try again.");
+        }
+      } else {
+        setLoginError("An unexpected error occurred during login. Please try again.");
+      }
     }
   };
 
@@ -120,7 +139,7 @@ export default function App() {
   }
 
   if (!user) {
-    return <LandingPage onStart={handleLogin} />;
+    return <LandingPage onStart={handleLogin} error={loginError} />;
   }
 
   return (
@@ -201,10 +220,24 @@ export default function App() {
               transition={{ duration: 0.3 }}
               className="h-full"
             >
-              {activeTab === "create" && <GeneratorView onGenerated={() => {}} />}
+              {activeTab === "create" && (
+                <GeneratorView 
+                  onGenerated={() => {}} 
+                  initialPrompt={initialPrompt}
+                />
+              )}
               {activeTab === "history" && (
                 <HistoryView history={history} onDelete={deleteFromHistory} />
               )}
+              {activeTab === "templates" && (
+                <TemplatesView 
+                  onSelectTemplate={(prompt) => {
+                    setInitialPrompt(prompt);
+                    setActiveTab("create");
+                  }} 
+                />
+              )}
+              {activeTab === "platforms" && <PlatformsView />}
               {activeTab === "settings" && (
                 <div className="max-w-xl mx-auto space-y-6">
                   <h2 className="text-3xl font-bold mb-6">Settings</h2>

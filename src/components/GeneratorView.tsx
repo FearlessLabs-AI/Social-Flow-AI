@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Instagram, 
   Twitter, 
   Linkedin, 
+  Facebook,
+  MessageCircle,
   Zap, 
   Sparkles, 
   Copy, 
@@ -23,20 +25,29 @@ import { cn } from "../lib/utils";
 
 interface GeneratorViewProps {
   onGenerated: (content: GeneratedContent) => void;
+  initialPrompt?: string;
 }
 
-export default function GeneratorView({ onGenerated }: GeneratorViewProps) {
-  const [prompt, setPrompt] = useState("");
+export default function GeneratorView({ onGenerated, initialPrompt = "" }: GeneratorViewProps) {
+  const [prompt, setPrompt] = useState(initialPrompt);
   const [platform, setPlatform] = useState<Platform>('instagram');
   const [tone, setTone] = useState<Tone>('funny');
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<GeneratedContent | null>(null);
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (initialPrompt) {
+      setPrompt(initialPrompt);
+    }
+  }, [initialPrompt]);
+
   const platforms: { id: Platform; icon: React.ElementType; label: string }[] = [
     { id: 'instagram', icon: Instagram, label: 'Instagram' },
+    { id: 'facebook', icon: Facebook, label: 'Facebook' },
     { id: 'twitter', icon: Twitter, label: 'X (Twitter)' },
     { id: 'tiktok', icon: Zap, label: 'TikTok' },
+    { id: 'whatsapp', icon: MessageCircle, label: 'WhatsApp Status' },
     { id: 'linkedin', icon: Linkedin, label: 'LinkedIn' },
     { id: 'ads', icon: Send, label: 'Ad Copy' },
   ];
@@ -173,34 +184,42 @@ export default function GeneratorView({ onGenerated }: GeneratorViewProps) {
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.5 }}
           >
-            <GlassCard className="relative group overflow-visible" hover={false}>
-              <div className="absolute -top-3 -right-3 flex gap-2">
+            <GlassCard className="relative group overflow-visible border-cyan-400/20" hover={false}>
+              <div className="absolute -top-4 -right-4 flex gap-2">
                 <button 
                   onClick={copyToClipboard}
-                  className="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                  className="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center shadow-[0_10px_20px_rgba(255,255,255,0.2)] hover:scale-110 active:scale-95 transition-all"
                   title="Copy to clipboard"
                 >
                   {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                 </button>
                 <button 
                   onClick={handleGenerate}
-                  className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                  className="w-12 h-12 rounded-2xl bg-cyan-500 text-white flex items-center justify-center shadow-[0_10px_20px_rgba(34,211,238,0.3)] hover:scale-110 active:scale-95 transition-all"
                   title="Regenerate"
                 >
                   <RotateCcw className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-black/40 prose-pre:p-4 prose-pre:rounded-xl">
-                <ReactMarkdown>{result.text}</ReactMarkdown>
+              <div className="prose prose-invert max-w-none font-sans text-lg leading-relaxed text-white/90">
+                <div className="markdown-body">
+                  <ReactMarkdown>{result.text}</ReactMarkdown>
+                </div>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between text-xs text-white/30">
-                <span className="flex items-center gap-1.5 capitalize">
-                  <Zap className="w-3 h-3 text-blue-400" />
-                  {result.platform} • {result.tone}
+              <div className="mt-10 pt-6 border-t border-white/10 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="px-3 py-1 rounded-full bg-cyan-400/10 border border-cyan-400/20 text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                    {result.platform}
+                  </div>
+                  <div className="px-3 py-1 rounded-full bg-purple-400/10 border border-purple-400/20 text-[10px] font-bold text-purple-400 uppercase tracking-widest">
+                    {result.tone}
+                  </div>
+                </div>
+                <span className="text-[10px] text-white/30 font-bold uppercase tracking-tighter">
+                  Generated {new Date(result.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
-                <span>{new Date(result.timestamp).toLocaleTimeString()}</span>
               </div>
             </GlassCard>
           </motion.div>

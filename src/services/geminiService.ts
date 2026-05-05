@@ -24,7 +24,7 @@ Return only the generated content without any meta-talk.`;
 export async function generateSocialContent(prompt: string, platform: Platform, tone: Tone) {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.0-flash",
       contents: [
         {
           role: "user",
